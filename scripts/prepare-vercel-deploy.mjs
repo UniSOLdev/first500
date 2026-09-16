@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 
 const ROOT = process.cwd();
-const IGNORE = new Set(["node_modules", ".next", ".git", "scripts"]);
+const IGNORE = new Set(["node_modules", ".next", ".git", "scripts", ".vercel"]);
 const BINARY_EXT = new Set([
   ".ico",
   ".png",
