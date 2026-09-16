@@ -74,6 +74,7 @@ export type Database = {
           updated_at?: string;
         };
         Update: Partial<Omit<Profile, "id">>;
+        Relationships: [];
       };
       entitlements: {
         Row: Entitlement;
@@ -83,24 +84,41 @@ export type Database = {
           updated_at?: string;
         };
         Update: Partial<Omit<Entitlement, "id">>;
+        Relationships: [];
       };
       challenge_profiles: {
         Row: ChallengeProfile;
-        Insert: Omit<ChallengeProfile, "id" | "created_at" | "updated_at"> & {
+        Insert: {
           id?: string;
+          user_id: string;
+          selected_service?: string | null;
+          city_or_market?: string | null;
+          starting_budget?: string | null;
+          experience_level?: string | null;
+          available_hours?: string | null;
+          primary_goal?: string | null;
+          onboarding_completed?: boolean;
           created_at?: string;
           updated_at?: string;
         };
         Update: Partial<Omit<ChallengeProfile, "id">>;
+        Relationships: [];
       };
       challenge_progress: {
         Row: ChallengeProgress;
-        Insert: Omit<ChallengeProgress, "id" | "created_at" | "updated_at"> & {
+        Insert: {
           id?: string;
+          user_id: string;
+          day_number: number;
+          status?: DayStatus;
+          started_at?: string | null;
+          completed_at?: string | null;
+          responses?: Json;
           created_at?: string;
           updated_at?: string;
         };
         Update: Partial<Omit<ChallengeProgress, "id">>;
+        Relationships: [];
       };
       ai_conversations: {
         Row: AiConversation;
@@ -109,7 +127,12 @@ export type Database = {
           created_at?: string;
         };
         Update: Partial<Omit<AiConversation, "id">>;
+        Relationships: [];
       };
     };
+    Views: Record<string, never>;
+    Functions: Record<string, never>;
+    Enums: Record<string, never>;
+    CompositeTypes: Record<string, never>;
   };
 };

@@ -13,18 +13,15 @@ const protectedPrefixes = [
 ];
 
 export async function middleware(request: NextRequest) {
-  const response = await updateSession(request);
   const { pathname } = request.nextUrl;
-
   const isProtected = protectedPrefixes.some((p) => pathname.startsWith(p));
-  if (!isProtected) return response;
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+  const { response, user } = await updateSession(request);
 
-  if (!supabaseUrl || !supabaseKey) {
-    if (process.env.NODE_ENV === "development") return response;
-    return NextResponse.redirect(new URL("/login", request.url));
+  if (isProtected && !user) {
+    const loginUrl = new URL("/login", request.url);
+    loginUrl.searchParams.set("next", pathname);
+    return NextResponse.redirect(loginUrl);
   }
 
   return response;

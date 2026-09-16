@@ -55,13 +55,20 @@ export function isAdminEmail(email: string | undefined): boolean {
 }
 
 export function safeRedirectPath(path: string | null | undefined): string {
-  const allowed = [
-    "/checkout",
-    "/dashboard",
-    "/onboarding",
-    "/settings",
-    "/resources",
+  if (!path || !path.startsWith("/") || path.startsWith("//")) {
+    return "/dashboard";
+  }
+
+  const blocked = [
+    "/login",
+    "/signup",
+    "/forgot-password",
+    "/reset-password",
+    "/auth/callback",
   ];
-  if (path && allowed.includes(path)) return path;
-  return "/dashboard";
+  if (blocked.some((route) => path === route || path.startsWith(`${route}?`))) {
+    return "/dashboard";
+  }
+
+  return path;
 }
