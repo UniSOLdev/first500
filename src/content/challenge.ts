@@ -12,6 +12,180 @@ export type ChallengeDay = {
   milestone: string;
 };
 
+/** JSONB shapes stored in challenge_progress.responses — keys match deliverable.key */
+export type SelectedServiceDeliverable = {
+  serviceId: string;
+  serviceName: string;
+};
+
+export type CoreOfferDeliverable = {
+  service: string;
+  idealCustomer: string;
+  coreJob: string;
+  benefit: string;
+  basePackage: string;
+  upgrade: string;
+  offerStatement: string;
+};
+
+export type PricingTier = {
+  name: string;
+  price: number;
+  includes: string;
+};
+
+export type PricingTiersDeliverable = {
+  laborHours: number;
+  suppliesCost: number;
+  travelCost: number;
+  hourlyValue: number;
+  tiers: PricingTier[];
+};
+
+export type BrandChecklistItem = {
+  id: string;
+  label: string;
+  hint?: string;
+};
+
+export type BusinessProfileDeliverable = {
+  businessName: string;
+  tagline: string;
+  shortDescription: string;
+  facebookBio: string;
+  instagramBio: string;
+  googleDescription: string;
+  contactPhone: string;
+  contactEmail: string;
+  onlinePresence: string;
+  checklistCompleted: string[];
+};
+
+export type ProspectStatus =
+  | "not_contacted"
+  | "contacted"
+  | "replied"
+  | "booked"
+  | "not_interested";
+
+export type Prospect = {
+  id: string;
+  name: string;
+  channel: string;
+  status: ProspectStatus;
+  notes?: string;
+};
+
+export type ProspectListDeliverable = {
+  prospects: Prospect[];
+};
+
+export type OutreachAction = {
+  id: string;
+  type: string;
+  target: string;
+  completed: boolean;
+  notes?: string;
+};
+
+export type FirstOutreachDeliverable = {
+  actions: OutreachAction[];
+};
+
+export type ClosingSystemDeliverable = {
+  customerName: string;
+  service: string;
+  scopeItems: string[];
+  price: number;
+  upgrade: string;
+  upgradePrice: number;
+  notes: string;
+  quoteText: string;
+};
+
+export type DayDeliverables = {
+  selectedService?: SelectedServiceDeliverable;
+  coreOffer?: CoreOfferDeliverable;
+  pricingTiers?: PricingTiersDeliverable;
+  businessProfile?: BusinessProfileDeliverable;
+  prospectList?: ProspectListDeliverable;
+  firstOutreach?: FirstOutreachDeliverable;
+  closingSystem?: ClosingSystemDeliverable;
+};
+
+export const BRAND_CHECKLIST: BrandChecklistItem[] = [
+  {
+    id: "business-name",
+    label: "Choose a clear business name",
+    hint: "Keep it simple — your name + service works fine (e.g., Mike's Mobile Detailing).",
+  },
+  {
+    id: "contact-method",
+    label: "Set up a dedicated phone number or email for customers",
+    hint: "Google Voice or a separate email keeps work messages organized.",
+  },
+  {
+    id: "profile-photo",
+    label: "Add a profile photo (you or your work)",
+    hint: "A friendly headshot or a before/after photo builds trust fast.",
+  },
+  {
+    id: "short-description",
+    label: "Write a one-sentence description of what you do",
+    hint: "Use your Day 2 offer statement as a starting point.",
+  },
+  {
+    id: "online-presence",
+    label: "Create at least one online presence",
+    hint: "Facebook Business Page, Instagram, or Google Business Profile — pick one and finish it today.",
+  },
+  {
+    id: "before-after-plan",
+    label: "Plan to capture before/after photos on every job",
+    hint: "Phone photos are enough. They become your best marketing.",
+  },
+  {
+    id: "local-research",
+    label: "Research local licensing/insurance requirements",
+    hint: "Requirements vary by city and service type — know what's required before paid jobs.",
+  },
+];
+
+export const PROSPECT_CHANNELS = [
+  "Friends & family",
+  "Facebook group",
+  "Nextdoor / neighborhood app",
+  "Facebook Marketplace",
+  "Door hanger / flyer",
+  "Direct outreach",
+  "Local business",
+  "Property manager",
+  "Realtor",
+  "HOA / community",
+  "Past customer",
+  "Other",
+];
+
+export const PROSPECT_STATUSES: { value: ProspectStatus; label: string }[] = [
+  { value: "not_contacted", label: "Not Contacted" },
+  { value: "contacted", label: "Contacted" },
+  { value: "replied", label: "Replied" },
+  { value: "booked", label: "Booked" },
+  { value: "not_interested", label: "Not Interested" },
+];
+
+export const OUTREACH_ACTION_TYPES = [
+  "Warm DM",
+  "Cold DM",
+  "Facebook post",
+  "Neighborhood post",
+  "Follow-up",
+  "Phone call",
+  "In-person ask",
+  "Referral request",
+  "Other",
+];
+
 export const TOTAL_DAYS = 7;
 
 export const CHALLENGE_DAYS: ChallengeDay[] = [
