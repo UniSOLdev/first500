@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { ONBOARDING_SERVICES } from "@/content/challenge";
-import { saveOnboarding, type OnboardingInput } from "../challenge/actions";
+import { saveOnboarding, type OnboardingInput } from "@/app/(app)/challenge/actions";
 import { cn } from "@/lib/utils";
 
 const BUDGET_OPTIONS = [

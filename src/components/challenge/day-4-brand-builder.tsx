@@ -36,7 +36,6 @@ const EMPTY: BusinessProfileDeliverable = {
 };
 
 export function Day4BrandBuilder({
-  dayNumber,
   deliverableKey,
   initialData,
   defaultOffer = "",

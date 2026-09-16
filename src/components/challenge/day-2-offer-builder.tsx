@@ -28,7 +28,6 @@ const EMPTY: CoreOfferDeliverable = {
 };
 
 export function Day2OfferBuilder({
-  dayNumber,
   deliverableKey,
   initialData,
   defaultService = "",

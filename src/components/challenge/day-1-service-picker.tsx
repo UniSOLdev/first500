@@ -26,7 +26,6 @@ type Day1ServicePickerProps = {
 };
 
 export function Day1ServicePicker({
-  dayNumber,
   deliverableKey,
   initialData,
   onValidityChange,

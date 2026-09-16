@@ -72,7 +72,6 @@ function ScriptCard({ resource }: { resource: Resource }) {
 }
 
 export function Day6Outreach({
-  dayNumber,
   deliverableKey,
   initialData,
   onValidityChange,

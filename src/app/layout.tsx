@@ -15,6 +15,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"
+  ),
   title: "FIRST $500 | Build Your Local Service Business in 7 Days",
   description:
     "A step-by-step 7-day challenge to build your local service offer, pricing, customer outreach system, and path toward your first paying customers.",

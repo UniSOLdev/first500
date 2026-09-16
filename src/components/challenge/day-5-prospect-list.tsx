@@ -49,7 +49,6 @@ function buildInitialProspects(data?: ProspectListDeliverable): Prospect[] {
 }
 
 export function Day5ProspectList({
-  dayNumber,
   deliverableKey,
   initialData,
   onValidityChange,

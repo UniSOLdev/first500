@@ -42,8 +42,13 @@ const DEFAULT_INPUTS = {
   hourlyValue: 50,
 };
 
+function calculateBase(vals: typeof DEFAULT_INPUTS) {
+  return (
+    vals.laborHours * vals.hourlyValue + vals.suppliesCost + vals.travelCost
+  );
+}
+
 export function Day3PricingBuilder({
-  dayNumber,
   deliverableKey,
   initialData,
   onValidityChange,
@@ -55,24 +60,12 @@ export function Day3PricingBuilder({
     travelCost: initialData?.travelCost ?? DEFAULT_INPUTS.travelCost,
     hourlyValue: initialData?.hourlyValue ?? DEFAULT_INPUTS.hourlyValue,
   });
-  const [tiers, setTiers] = useState<PricingTier[]>(
-    initialData?.tiers ?? defaultTiers(calculateBase(inputs))
+  const [manualTiers, setManualTiers] = useState<PricingTier[] | null>(
+    initialData?.tiers ?? null
   );
-  const [tiersEdited, setTiersEdited] = useState(Boolean(initialData?.tiers));
-
-  function calculateBase(vals: typeof inputs) {
-    return (
-      vals.laborHours * vals.hourlyValue + vals.suppliesCost + vals.travelCost
-    );
-  }
 
   const suggestedBase = useMemo(() => calculateBase(inputs), [inputs]);
-
-  useEffect(() => {
-    if (!tiersEdited) {
-      setTiers(defaultTiers(suggestedBase));
-    }
-  }, [suggestedBase, tiersEdited]);
+  const tiers = manualTiers ?? defaultTiers(suggestedBase);
 
   useEffect(() => {
     const data: PricingTiersDeliverable = { ...inputs, tiers };
@@ -83,13 +76,13 @@ export function Day3PricingBuilder({
 
   function updateInput(key: keyof typeof inputs, value: number) {
     setInputs((prev) => ({ ...prev, [key]: value }));
-    setTiersEdited(false);
+    setManualTiers(null);
   }
 
   function updateTier(index: number, patch: Partial<PricingTier>) {
-    setTiersEdited(true);
-    setTiers((prev) =>
-      prev.map((tier, i) => (i === index ? { ...tier, ...patch } : tier))
+    const base = manualTiers ?? defaultTiers(suggestedBase);
+    setManualTiers(
+      base.map((tier, i) => (i === index ? { ...tier, ...patch } : tier))
     );
   }
 

@@ -48,6 +48,7 @@ function DayChallengeInner({
   const isCompleted = status === "completed";
 
   const commonProps = {
+    dayNumber: day.number,
     deliverableKey,
     onValidityChange: (valid: boolean) => {
       if (!isCompleted) setCanComplete(valid);

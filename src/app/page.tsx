@@ -10,10 +10,12 @@ import { WhoThisIsFor } from "@/components/landing/who-this-is-for";
 import { ValuePricing } from "@/components/landing/value-pricing";
 import { FaqSection } from "@/components/landing/faq-section";
 import { FinalCta } from "@/components/landing/final-cta";
+import { LandingAnalytics } from "@/components/landing/landing-analytics";
 
 export default function LandingPage() {
   return (
     <>
+      <LandingAnalytics />
       <MarketingNav />
       <main className="pb-24 md:pb-0">
         <HeroSection />

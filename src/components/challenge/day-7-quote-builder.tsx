@@ -31,7 +31,6 @@ const EMPTY: ClosingSystemDeliverable = {
 };
 
 export function Day7QuoteBuilder({
-  dayNumber,
   deliverableKey,
   initialData,
   defaultService = "",
