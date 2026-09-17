@@ -2,6 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import type { User } from "@supabase/supabase-js";
 import type { Database } from "@/types/database";
+import { getSupabaseAnonKey, getSupabaseUrl } from "./config";
 
 export async function updateSession(request: NextRequest): Promise<{
   response: NextResponse;
@@ -9,8 +10,8 @@ export async function updateSession(request: NextRequest): Promise<{
 }> {
   let supabaseResponse = NextResponse.next({ request });
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+  const supabaseUrl = getSupabaseUrl();
+  const supabaseKey = getSupabaseAnonKey();
 
   if (!supabaseUrl || !supabaseKey) {
     return { response: supabaseResponse, user: null };

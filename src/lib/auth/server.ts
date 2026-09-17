@@ -2,16 +2,30 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { hasActiveEntitlement } from "@/lib/entitlements";
 import { PRODUCT } from "@/config/product";
+import { isSupabaseConfigured } from "@/lib/supabase/config";
 
 export async function getUser() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  return user;
+  if (!isSupabaseConfigured()) {
+    return null;
+  }
+
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    return user;
+  } catch (error) {
+    console.error("[auth] getUser failed:", error);
+    return null;
+  }
 }
 
 export async function requireAuth(redirectTo = "/login") {
+  if (!isSupabaseConfigured()) {
+    redirect("/login?error=auth");
+  }
+
   const user = await getUser();
   if (!user) {
     redirect(redirectTo);
@@ -29,13 +43,22 @@ export async function requireEntitlement() {
 }
 
 export async function getProfile(userId: string) {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", userId)
-    .single();
-  return data;
+  if (!isSupabaseConfigured()) {
+    return null;
+  }
+
+  try {
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", userId)
+      .single();
+    return data;
+  } catch (error) {
+    console.error("[auth] getProfile failed:", error);
+    return null;
+  }
 }
 
 export function isDevBypassEntitlement(): boolean {

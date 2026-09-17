@@ -11,10 +11,12 @@ type AuthFormProps = {
   mode: "login" | "signup";
   action: (prev: { error?: string; success?: boolean } | undefined, formData: FormData) => Promise<{ error?: string; success?: boolean } | undefined>;
   next?: string;
+  initialError?: string;
 };
 
-export function AuthForm({ mode, action, next = "/dashboard" }: AuthFormProps) {
+export function AuthForm({ mode, action, next = "/dashboard", initialError }: AuthFormProps) {
   const [state, formAction, pending] = useActionState(action, undefined);
+  const displayError = state?.error ?? initialError;
 
   return (
     <Card className="w-full max-w-md border-neutral-200 shadow-sm">
@@ -45,8 +47,8 @@ export function AuthForm({ mode, action, next = "/dashboard" }: AuthFormProps) {
             <Label htmlFor="password">Password</Label>
             <Input id="password" name="password" type="password" required minLength={6} placeholder="••••••••" />
           </div>
-          {state?.error && (
-            <p className="text-sm text-destructive">{state.error}</p>
+          {displayError && (
+            <p className="text-sm text-destructive">{displayError}</p>
           )}
           <Button type="submit" className="w-full bg-brand hover:bg-brand-hover" disabled={pending}>
             {pending ? "Please wait..." : mode === "login" ? "Log in" : "Create account"}

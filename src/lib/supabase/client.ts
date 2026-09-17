@@ -1,9 +1,16 @@
 import { createBrowserClient } from "@supabase/ssr";
 import type { Database } from "@/types/database";
+import { getSupabaseAnonKey, getSupabaseUrl } from "./config";
 
 export function createClient() {
-  return createBrowserClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
-  );
+  const url = getSupabaseUrl();
+  const anonKey = getSupabaseAnonKey();
+
+  if (!url || !anonKey) {
+    throw new Error(
+      "Authentication is temporarily unavailable. Please refresh and try again."
+    );
+  }
+
+  return createBrowserClient<Database>(url, anonKey);
 }
