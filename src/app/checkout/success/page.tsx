@@ -1,6 +1,15 @@
+import { Suspense } from "react";
 import { Logo } from "@/components/brand/logo";
 import { requireAuth } from "@/lib/auth/server";
 import { SuccessClient } from "./success-client";
+
+function SuccessLoading() {
+  return (
+    <div className="w-full max-w-md rounded-xl border border-border/60 bg-card p-6 text-center text-sm text-muted-foreground">
+      Confirming your payment…
+    </div>
+  );
+}
 
 export default async function CheckoutSuccessPage() {
   await requireAuth();
@@ -10,7 +19,9 @@ export default async function CheckoutSuccessPage() {
       <div className="mb-8">
         <Logo size="lg" />
       </div>
-      <SuccessClient />
+      <Suspense fallback={<SuccessLoading />}>
+        <SuccessClient />
+      </Suspense>
     </div>
   );
 }

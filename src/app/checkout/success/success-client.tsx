@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,6 +26,9 @@ const SUPPORT_EMAIL =
 
 export function SuccessClient() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const sessionId = searchParams.get("session_id");
+
   const [message, setMessage] = useState("Confirming your payment…");
   const [pending, setPending] = useState(true);
 
@@ -36,22 +39,62 @@ export function SuccessClient() {
   useEffect(() => {
     let attempts = 0;
     let cancelled = false;
+    let verifiedSession = false;
+
+    async function checkEntitlement(): Promise<boolean> {
+      const response = await fetch("/api/entitlements/status");
+      if (!response.ok) return false;
+      const data = (await response.json()) as EntitlementStatus;
+      return data.active;
+    }
+
+    async function verifyWithStripe(): Promise<boolean> {
+      if (!sessionId || verifiedSession) return false;
+      verifiedSession = true;
+
+      try {
+        const response = await fetch("/api/stripe/verify-session", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ session_id: sessionId }),
+        });
+        if (!response.ok) return false;
+        const data = (await response.json()) as { active?: boolean };
+        return !!data.active;
+      } catch {
+        return false;
+      }
+    }
 
     async function poll() {
+      // Try Stripe verify once early if we have session_id (webhook may be delayed)
+      if (sessionId) {
+        const verified = await verifyWithStripe();
+        if (verified && !cancelled) {
+          router.replace("/dashboard");
+          return;
+        }
+      }
+
       while (!cancelled && attempts < MAX_ATTEMPTS) {
         attempts += 1;
 
         try {
-          const response = await fetch("/api/entitlements/status");
-          if (response.ok) {
-            const data = (await response.json()) as EntitlementStatus;
-            if (data.active) {
+          if (await checkEntitlement()) {
+            router.replace("/dashboard");
+            return;
+          }
+
+          // Retry verify after a few poll attempts
+          if (sessionId && attempts === 5) {
+            const verified = await verifyWithStripe();
+            if (verified && !cancelled) {
               router.replace("/dashboard");
               return;
             }
           }
         } catch {
-          // Webhook may still be processing
+          // Keep polling
         }
 
         await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS));
@@ -70,7 +113,7 @@ export function SuccessClient() {
     return () => {
       cancelled = true;
     };
-  }, [router]);
+  }, [router, sessionId]);
 
   return (
     <Card className="w-full max-w-md">
@@ -88,7 +131,7 @@ export function SuccessClient() {
           <div className="space-y-3">
             <Link
               href="/dashboard"
-              className="inline-flex h-8 w-full items-center justify-center rounded-lg bg-brand px-2.5 text-sm font-medium text-primary-foreground hover:bg-brand-hover"
+              className="inline-flex h-10 w-full items-center justify-center rounded-lg bg-brand px-4 text-sm font-medium text-primary-foreground hover:bg-brand-hover"
             >
               Go to dashboard
             </Link>

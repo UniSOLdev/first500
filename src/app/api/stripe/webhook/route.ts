@@ -31,6 +31,36 @@ async function getUserEmail(userId: string): Promise<{
   }
 }
 
+async function handleRefund(charge: Stripe.Charge) {
+  const customerId =
+    typeof charge.customer === "string" ? charge.customer : charge.customer?.id;
+
+  if (customerId) {
+    await revokeEntitlement({ stripeCustomerId: customerId });
+    return;
+  }
+
+  // Fallback: lookup checkout session from payment intent
+  const paymentIntentId =
+    typeof charge.payment_intent === "string"
+      ? charge.payment_intent
+      : charge.payment_intent?.id;
+
+  if (paymentIntentId) {
+    const stripe = getStripe();
+    const sessions = await stripe.checkout.sessions.list({
+      payment_intent: paymentIntentId,
+      limit: 1,
+    });
+    const session = sessions.data[0];
+    const userId =
+      session?.metadata?.user_id ?? session?.client_reference_id ?? null;
+    if (userId) {
+      await revokeEntitlement({ userId });
+    }
+  }
+}
+
 export async function POST(request: Request) {
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
   if (!webhookSecret) {
@@ -125,23 +155,25 @@ export async function POST(request: Request) {
     }
   }
 
-  if (
-    event.type === "charge.refunded" ||
-    event.type === "checkout.session.async_payment_failed"
-  ) {
-    const object = event.data.object as Stripe.Charge | Stripe.Checkout.Session;
-    let userId: string | null = null;
-
-    if ("metadata" in object && object.metadata?.user_id) {
-      userId = object.metadata.user_id;
+  if (event.type === "charge.refunded") {
+    const charge = event.data.object as Stripe.Charge;
+    try {
+      await handleRefund(charge);
+    } catch (error) {
+      console.error("[stripe/webhook] Failed to revoke entitlement", error);
+      return NextResponse.json({ error: "Revoke failed" }, { status: 500 });
     }
+  }
 
+  if (event.type === "checkout.session.async_payment_failed") {
+    const session = event.data.object as Stripe.Checkout.Session;
+    const userId =
+      session.metadata?.user_id ?? session.client_reference_id ?? null;
     if (userId) {
       try {
         await revokeEntitlement({ userId });
       } catch (error) {
-        console.error("[stripe/webhook] Failed to revoke entitlement", error);
-        return NextResponse.json({ error: "Revoke failed" }, { status: 500 });
+        console.error("[stripe/webhook] Failed to revoke after async failure", error);
       }
     }
   }

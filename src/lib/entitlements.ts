@@ -109,19 +109,28 @@ export async function grantEntitlementFromCheckout(params: {
 }
 
 export async function revokeEntitlement(params: {
-  userId: string;
+  userId?: string;
+  stripeCustomerId?: string | null;
   productKey?: string;
 }) {
   const admin = getAdminClient();
   const productKey = params.productKey ?? PRODUCT.key;
 
-  const { error } = await admin
+  let query = admin
     .from("entitlements")
     .update({ status: "refunded" })
-    .eq("user_id", params.userId)
     .eq("product_key", productKey)
     .eq("status", "active");
 
+  if (params.userId) {
+    query = query.eq("user_id", params.userId);
+  } else if (params.stripeCustomerId) {
+    query = query.eq("stripe_customer_id", params.stripeCustomerId);
+  } else {
+    throw new Error("userId or stripeCustomerId required to revoke");
+  }
+
+  const { error } = await query;
   if (error) throw error;
 }
 
@@ -137,7 +146,6 @@ export async function recordStripeWebhookEvent(
   });
 
   if (error) {
-    // Unique violation = already processed
     if (error.code === "23505") return false;
     throw error;
   }

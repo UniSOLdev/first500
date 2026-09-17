@@ -40,14 +40,21 @@ Add in [Vercel → first500 → Settings → Environment Variables](https://verc
 
 After adding vars: **Redeploy** production (or push any commit).
 
-### 2. Stripe (live mode)
+### 2. Stripe (live mode) — product & webhook created ✅
 
-1. Create **Product**: FIRST $500 — $17 one-time
-2. Copy **Price ID** → `STRIPE_PRICE_ID`
-3. Create **Webhook**:
-   - URL: `https://first500-fawn.vercel.app/api/stripe/webhook`
-   - Events: `checkout.session.completed`, `charge.refunded`
-4. Copy **Signing secret** → `STRIPE_WEBHOOK_SECRET`
+Stripe live resources are configured. Add to Vercel:
+
+| Variable | Value |
+|----------|-------|
+| `STRIPE_PRICE_ID` | `price_1UGTSJKQggiVQDOXw3Ay2w2I` |
+| `STRIPE_SECRET_KEY` | `sk_live_...` from [Stripe API keys](https://dashboard.stripe.com/apikeys) |
+| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | `pk_live_...` from same page |
+| `STRIPE_WEBHOOK_SECRET` | Signing secret from webhook `we_1UGTSRKQggiVQDOXgcsS6gHb` |
+
+Webhook URL (already registered): `https://first500-fawn.vercel.app/api/stripe/webhook`
+
+See `docs/STRIPE.md` for full details.
+
 5. Run one **live test purchase** with a real card, then refund yourself
 
 ### 3. Supabase Auth — **disable email confirmation** (critical for ads)
