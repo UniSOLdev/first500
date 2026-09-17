@@ -12,6 +12,14 @@
 1. `001_initial_schema` — profiles, entitlements, challenge_profiles, challenge_progress, ai_conversations, RLS
 2. `002_harden_functions` — search_path + revoke public execute on trigger function
 
+## Auth — disable email confirmation (required for launch)
+
+In **Authentication → Providers → Email**:
+
+- **Confirm email: OFF**
+
+Why: Paid traffic needs instant signup → checkout. Confirmation emails hit Supabase's built-in SMTP rate limit (`email rate limit exceeded`) during testing and early launch. Stripe payment is the access gate.
+
 ## Auth URL configuration
 
 In **Authentication → URL Configuration**:

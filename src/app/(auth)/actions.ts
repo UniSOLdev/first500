@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { safeRedirectPath } from "@/lib/auth/server";
+import { mapAuthError } from "@/lib/auth/errors";
 import { trackServer } from "@/lib/analytics";
 import {
   isSupabaseConfigured,
@@ -54,7 +55,7 @@ export async function signUp(
   const next = safeRedirectPath(formData.get("next") as string);
 
   const result = await withAuthClient(async (supabase) => {
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -64,10 +65,20 @@ export async function signUp(
     });
 
     if (error) {
-      return { error: error.message } satisfies AuthActionState;
+      console.error("[auth/signUp]", error.message);
+      return { error: mapAuthError(error.message) } satisfies AuthActionState;
     }
 
-    trackServer("signup_completed", { email });
+    // Email confirmation enabled — no session until user confirms
+    if (data.user && !data.session) {
+      return {
+        error:
+          "Check your email for a confirmation link, then log in to continue to checkout. " +
+          "If you don't see it, check spam or wait a few minutes.",
+      } satisfies AuthActionState;
+    }
+
+    trackServer("signup_completed", { email }, data.user?.id);
     redirect(next);
   });
 
@@ -93,7 +104,8 @@ export async function signIn(
     });
 
     if (error) {
-      return { error: error.message } satisfies AuthActionState;
+      console.error("[auth/signIn]", error.message);
+      return { error: mapAuthError(error.message) } satisfies AuthActionState;
     }
 
     redirect(next);
@@ -133,7 +145,8 @@ export async function forgotPassword(
     });
 
     if (error) {
-      return { error: error.message } satisfies AuthActionState;
+      console.error("[auth/forgotPassword]", error.message);
+      return { error: mapAuthError(error.message) } satisfies AuthActionState;
     }
 
     return { success: true } satisfies AuthActionState;
@@ -156,7 +169,8 @@ export async function resetPassword(
     const { error } = await supabase.auth.updateUser({ password });
 
     if (error) {
-      return { error: error.message } satisfies AuthActionState;
+      console.error("[auth/resetPassword]", error.message);
+      return { error: mapAuthError(error.message) } satisfies AuthActionState;
     }
 
     redirect("/dashboard");

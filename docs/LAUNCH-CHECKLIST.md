@@ -50,7 +50,17 @@ After adding vars: **Redeploy** production (or push any commit).
 4. Copy **Signing secret** → `STRIPE_WEBHOOK_SECRET`
 5. Run one **live test purchase** with a real card, then refund yourself
 
-### 3. Supabase Auth URLs
+### 3. Supabase Auth — **disable email confirmation** (critical for ads)
+
+In [Supabase → Authentication → Providers → Email](https://supabase.com/dashboard/project/fnjcqlspebccknzshxfa/auth/providers):
+
+1. **Turn OFF "Confirm email"** — customers must reach checkout immediately after signup
+2. Without this, Supabase sends a confirmation email on every signup and hits **email rate limits** quickly (`email rate limit exceeded`)
+3. Payment via Stripe is your gate — email confirmation adds friction and breaks the ad funnel
+
+Optional for scale: configure **custom SMTP** (Resend) under Authentication → Email Templates → SMTP Settings for higher send limits on password resets.
+
+### 4. Supabase Auth URLs
 
 In [Supabase → Authentication → URL Configuration](https://supabase.com/dashboard/project/fnjcqlspebccknzshxfa/auth/url-configuration):
 
@@ -59,7 +69,7 @@ In [Supabase → Authentication → URL Configuration](https://supabase.com/dash
   - `https://first500-fawn.vercel.app/auth/callback`
   - `https://first500-fawn.vercel.app/reset-password`
 
-### 4. Smoke test (15 min)
+### 5. Smoke test (15 min)
 
 1. Incognito → landing page → CTA → signup → checkout → pay $17
 2. Confirm redirect to dashboard within ~30 seconds
@@ -67,7 +77,7 @@ In [Supabase → Authentication → URL Configuration](https://supabase.com/dash
 4. Log out → log back in → access persists
 5. Visit `/admin` (must be in `ADMIN_EMAILS`)
 
-### 5. Optional before scaling ads
+### 6. Optional before scaling ads
 
 - [ ] Connect custom domain to Vercel
 - [ ] Set up Resend for welcome emails
