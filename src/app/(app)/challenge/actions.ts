@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import { requireAuth } from "@/lib/auth/server";
 import type { DayStatus, Json } from "@/types/database";
 import { TOTAL_DAYS } from "@/content/challenge";
+import { trackServer } from "@/lib/analytics";
 
 const onboardingSchema = z.object({
   selectedService: z.string().min(1, "Select a service"),
@@ -79,6 +80,12 @@ export async function startDay(dayNumber: number): Promise<ActionResult> {
 
   if (error) return { error: error.message };
 
+  if (dayNumber === 1) {
+    trackServer("day_1_started", { day_number: dayNumber }, user.id);
+  } else {
+    trackServer("challenge_day_started", { day_number: dayNumber }, user.id);
+  }
+
   revalidatePath("/dashboard");
   revalidatePath(`/challenge/day-${dayNumber}`);
   return { success: true };
@@ -138,6 +145,11 @@ export async function completeDay(
     );
 
   if (completeError) return { error: completeError.message };
+
+  trackServer("day_completed", { day_number: dayNumber }, user.id);
+  if (dayNumber === TOTAL_DAYS) {
+    trackServer("challenge_completed", {}, user.id);
+  }
 
   if (dayNumber < TOTAL_DAYS) {
     const { data: nextDay } = await supabase

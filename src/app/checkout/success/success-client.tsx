@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -9,6 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { track } from "@/lib/analytics";
 
 type EntitlementStatus = {
   active: boolean;
@@ -18,9 +21,17 @@ type EntitlementStatus = {
 const POLL_INTERVAL_MS = 2000;
 const MAX_ATTEMPTS = 30;
 
+const SUPPORT_EMAIL =
+  process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "support@first500.app";
+
 export function SuccessClient() {
   const router = useRouter();
-  const [message, setMessage] = useState("Confirming payment…");
+  const [message, setMessage] = useState("Confirming your payment…");
+  const [pending, setPending] = useState(true);
+
+  useEffect(() => {
+    track("purchase_completed");
+  }, []);
 
   useEffect(() => {
     let attempts = 0;
@@ -35,20 +46,21 @@ export function SuccessClient() {
           if (response.ok) {
             const data = (await response.json()) as EntitlementStatus;
             if (data.active) {
-              router.replace("/onboarding");
+              router.replace("/dashboard");
               return;
             }
           }
         } catch {
-          // Keep polling — webhook may still be processing.
+          // Webhook may still be processing
         }
 
         await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS));
       }
 
       if (!cancelled) {
+        setPending(false);
         setMessage(
-          "Payment received. Your access is still being confirmed — refresh in a moment or contact support if this persists."
+          "Payment received. Access is taking longer than usual to activate."
         );
       }
     }
@@ -63,14 +75,38 @@ export function SuccessClient() {
   return (
     <Card className="w-full max-w-md">
       <CardHeader>
-        <CardTitle>Almost there</CardTitle>
+        <CardTitle>Payment successful</CardTitle>
         <CardDescription>{message}</CardDescription>
       </CardHeader>
-      <CardContent>
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <span className="inline-block size-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-          Setting up your challenge access
-        </div>
+      <CardContent className="space-y-4">
+        {pending ? (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <span className="inline-block size-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+            Unlocking your challenge…
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <Link
+              href="/dashboard"
+              className="inline-flex h-8 w-full items-center justify-center rounded-lg bg-brand px-2.5 text-sm font-medium text-primary-foreground hover:bg-brand-hover"
+            >
+              Go to dashboard
+            </Link>
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => window.location.reload()}
+            >
+              Refresh access status
+            </Button>
+            <p className="text-xs text-muted-foreground text-center">
+              Still locked out after a few minutes? Email{" "}
+              <a href={`mailto:${SUPPORT_EMAIL}`} className="text-brand underline">
+                {SUPPORT_EMAIL}
+              </a>
+            </p>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

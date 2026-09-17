@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Tagline } from "@/components/brand/tagline";
+import { CtaLink } from "@/components/landing/cta-link";
 import { buttonVariants } from "@/components/ui/button";
 import { PRODUCT } from "@/config/product";
 import { cn } from "@/lib/utils";
@@ -19,8 +19,9 @@ export function FinalCta() {
           Join the challenge, follow the daily system, and build something real
           — one day at a time.
         </p>
-        <Link
+        <CtaLink
           href={SIGNUP_HREF}
+          source="final_cta"
           className={cn(
             buttonVariants({ size: "lg" }),
             "mt-8 h-12 gap-2 px-8 text-base"
@@ -28,7 +29,7 @@ export function FinalCta() {
         >
           {PRODUCT.ctaPrimary}
           <ArrowRight className="size-4" />
-        </Link>
+        </CtaLink>
       </div>
     </section>
   );

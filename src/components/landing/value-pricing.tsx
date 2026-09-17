@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { ArrowRight, Check } from "lucide-react";
+import { CtaLink } from "@/components/landing/cta-link";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PRODUCT } from "@/config/product";
@@ -48,8 +48,9 @@ export function ValuePricing() {
                 </li>
               ))}
             </ul>
-            <Link
+            <CtaLink
               href={SIGNUP_HREF}
+              source="pricing"
               className={cn(
                 buttonVariants({ size: "lg" }),
                 "h-12 w-full gap-2 text-base"
@@ -57,7 +58,7 @@ export function ValuePricing() {
             >
               {PRODUCT.ctaPrimary}
               <ArrowRight className="size-4" />
-            </Link>
+            </CtaLink>
             <p className="text-center text-xs text-muted-foreground">
               Secure checkout · Instant access after purchase
             </p>

@@ -1,7 +1,7 @@
-import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Tagline } from "@/components/brand/tagline";
 import { DashboardMockup } from "@/components/landing/dashboard-mockup";
+import { CtaLink } from "@/components/landing/cta-link";
 import { buttonVariants } from "@/components/ui/button";
 import { PRODUCT } from "@/config/product";
 import { cn } from "@/lib/utils";
@@ -33,8 +33,9 @@ export function HeroSection() {
           </div>
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <Link
+            <CtaLink
               href={SIGNUP_HREF}
+              source="hero"
               className={cn(
                 buttonVariants({ size: "lg" }),
                 "h-12 gap-2 px-6 text-base"
@@ -42,7 +43,7 @@ export function HeroSection() {
             >
               {PRODUCT.ctaPrimary}
               <ArrowRight className="size-4" />
-            </Link>
+            </CtaLink>
             <a
               href="#how-it-works"
               className={cn(

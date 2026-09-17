@@ -64,6 +64,27 @@ export type AiConversation = {
   created_at: string;
 };
 
+export type AiUsage = {
+  user_id: string;
+  message_count: number;
+  updated_at: string;
+};
+
+export type AnalyticsEventRow = {
+  id: string;
+  event_name: string;
+  user_id: string | null;
+  properties: Json;
+  created_at: string;
+};
+
+export type StripeWebhookEvent = {
+  id: string;
+  stripe_event_id: string;
+  event_type: string;
+  processed_at: string;
+};
+
 export type Database = {
   public: {
     Tables: {
@@ -127,6 +148,30 @@ export type Database = {
           created_at?: string;
         };
         Update: Partial<Omit<AiConversation, "id">>;
+        Relationships: [];
+      };
+      ai_usage: {
+        Row: AiUsage;
+        Insert: AiUsage;
+        Update: Partial<Omit<AiUsage, "user_id">>;
+        Relationships: [];
+      };
+      analytics_events: {
+        Row: AnalyticsEventRow;
+        Insert: Omit<AnalyticsEventRow, "id" | "created_at"> & {
+          id?: string;
+          created_at?: string;
+        };
+        Update: Partial<Omit<AnalyticsEventRow, "id">>;
+        Relationships: [];
+      };
+      stripe_webhook_events: {
+        Row: StripeWebhookEvent;
+        Insert: Omit<StripeWebhookEvent, "id" | "processed_at"> & {
+          id?: string;
+          processed_at?: string;
+        };
+        Update: Partial<Omit<StripeWebhookEvent, "id">>;
         Relationships: [];
       };
     };

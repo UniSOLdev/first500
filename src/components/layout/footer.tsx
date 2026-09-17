@@ -2,9 +2,11 @@ import Link from "next/link";
 import { Logo } from "@/components/brand/logo";
 import { Tagline } from "@/components/brand/tagline";
 import { PRODUCT } from "@/config/product";
+import { getSupportEmail } from "@/lib/support";
 
 export function Footer() {
   const year = new Date().getFullYear();
+  const supportEmail = getSupportEmail();
 
   return (
     <footer className="border-t border-border/60 bg-card">
@@ -16,6 +18,15 @@ export function Footer() {
             <p className="max-w-sm text-sm text-muted-foreground">
               {PRODUCT.descriptor} — a practical system to help you build and
               sell a local service, one day at a time.
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Support:{" "}
+              <a
+                href={`mailto:${supportEmail}`}
+                className="text-brand hover:underline"
+              >
+                {supportEmail}
+              </a>
             </p>
           </div>
 

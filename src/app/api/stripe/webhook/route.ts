@@ -1,11 +1,35 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { getStripe } from "@/lib/stripe/client";
-import { grantEntitlementFromCheckout } from "@/lib/entitlements";
+import {
+  grantEntitlementFromCheckout,
+  recordStripeWebhookEvent,
+  revokeEntitlement,
+} from "@/lib/entitlements";
+import { sendWelcomeEmail } from "@/lib/email";
 import { PRODUCT } from "@/config/product";
 import { trackServer } from "@/lib/analytics";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export const runtime = "nodejs";
+
+async function getUserEmail(userId: string): Promise<{
+  email: string;
+  fullName: string | null;
+} | null> {
+  try {
+    const admin = createAdminClient();
+    const { data } = await admin
+      .from("profiles")
+      .select("email, full_name")
+      .eq("id", userId)
+      .maybeSingle();
+    if (!data?.email) return null;
+    return { email: data.email, fullName: data.full_name };
+  } catch {
+    return null;
+  }
+}
 
 export async function POST(request: Request) {
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -33,6 +57,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
+  try {
+    const isNew = await recordStripeWebhookEvent(event.id, event.type);
+    if (!isNew) {
+      return NextResponse.json({ received: true, duplicate: true });
+    }
+  } catch (error) {
+    console.error("[stripe/webhook] Dedup check failed — continuing:", error);
+  }
+
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;
 
@@ -46,7 +79,10 @@ export async function POST(request: Request) {
 
     if (!userId) {
       console.error("[stripe/webhook] Missing user id on session", session.id);
-      return NextResponse.json({ received: true });
+      return NextResponse.json(
+        { error: "Missing user id on checkout session" },
+        { status: 500 }
+      );
     }
 
     const stripeCustomerId =
@@ -63,17 +99,50 @@ export async function POST(request: Request) {
         purchasedAt: new Date(session.created * 1000).toISOString(),
       });
 
-      trackServer("checkout_completed", {
-        user_id: userId,
-        product_key: productKey,
-        session_id: session.id,
-      });
+      trackServer(
+        "purchase_completed",
+        {
+          product_key: productKey,
+          session_id: session.id,
+          amount: session.amount_total ?? 0,
+        },
+        userId
+      );
+
+      const profile = await getUserEmail(userId);
+      if (profile) {
+        void sendWelcomeEmail({
+          to: profile.email,
+          fullName: profile.fullName,
+        });
+      }
     } catch (error) {
       console.error("[stripe/webhook] Failed to grant entitlement", error);
       return NextResponse.json(
         { error: "Failed to process checkout" },
         { status: 500 }
       );
+    }
+  }
+
+  if (
+    event.type === "charge.refunded" ||
+    event.type === "checkout.session.async_payment_failed"
+  ) {
+    const object = event.data.object as Stripe.Charge | Stripe.Checkout.Session;
+    let userId: string | null = null;
+
+    if ("metadata" in object && object.metadata?.user_id) {
+      userId = object.metadata.user_id;
+    }
+
+    if (userId) {
+      try {
+        await revokeEntitlement({ userId });
+      } catch (error) {
+        console.error("[stripe/webhook] Failed to revoke entitlement", error);
+        return NextResponse.json({ error: "Revoke failed" }, { status: 500 });
+      }
     }
   }
 

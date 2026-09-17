@@ -4,6 +4,11 @@ import { getUser, isDevBypassEntitlement } from "@/lib/auth/server";
 import { hasActiveEntitlement } from "@/lib/entitlements";
 import { trackServer } from "@/lib/analytics";
 import {
+  checkAiMessageLimit,
+  getAiMessageLimit,
+  incrementAiUsage,
+} from "@/lib/ai/usage-limit";
+import {
   checkRateLimit,
   formatRetryAfter,
 } from "@/lib/ai/rate-limit";
@@ -51,7 +56,7 @@ export async function POST(request: Request) {
     if (!rateLimit.allowed) {
       return NextResponse.json(
         {
-          error: `Rate limit exceeded. Try again in ${formatRetryAfter(rateLimit.retryAfterMs)}.`,
+          error: `You're sending messages quickly. Try again in ${formatRetryAfter(rateLimit.retryAfterMs)}.`,
         },
         {
           status: 429,
@@ -59,6 +64,17 @@ export async function POST(request: Request) {
             "Retry-After": String(Math.ceil(rateLimit.retryAfterMs / 1000)),
           },
         }
+      );
+    }
+
+    const usage = await checkAiMessageLimit(user.id);
+    if (!usage.allowed) {
+      return NextResponse.json(
+        {
+          error: `You've used all ${getAiMessageLimit()} AI coach messages included with your purchase. Focus on applying what you've learned in the challenge days.`,
+          usage: { used: usage.used, limit: usage.limit, remaining: 0 },
+        },
+        { status: 429 }
       );
     }
 
@@ -93,6 +109,7 @@ export async function POST(request: Request) {
         model: getOpenAIModel(),
         instructions: `${COACH_SYSTEM_PROMPT}\n\n${contextString}`,
         input: userInput,
+        max_output_tokens: 800,
       });
       assistantReply = response.output_text?.trim() ?? "";
       if (!assistantReply) {
@@ -105,6 +122,8 @@ export async function POST(request: Request) {
         { status: 503 }
       );
     }
+
+    await incrementAiUsage(user.id);
 
     const userContent = quickAction
       ? `[${QUICK_ACTIONS[quickAction].label}] ${userInput}`
@@ -125,14 +144,25 @@ export async function POST(request: Request) {
       console.error("[ai/coach] Failed to persist conversation:", insertError);
     }
 
-    trackServer("ai_coach_used", {
-      quickAction: quickAction ?? "",
-      dayNumber: coachContext.currentDay ?? 0,
-    });
+    trackServer(
+      "ai_coach_used",
+      {
+        quickAction: quickAction ?? "",
+        dayNumber: coachContext.currentDay ?? 0,
+      },
+      user.id
+    );
+
+    const updatedUsage = await checkAiMessageLimit(user.id);
 
     return NextResponse.json({
       reply: assistantReply,
       quickAction: quickAction ?? null,
+      usage: {
+        used: updatedUsage.used,
+        limit: updatedUsage.limit,
+        remaining: updatedUsage.remaining,
+      },
     });
   } catch (error) {
     console.error("[ai/coach] Unexpected error:", error);

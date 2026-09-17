@@ -3,9 +3,9 @@
 import { useEffect } from "react";
 import { track } from "@/lib/analytics";
 
-export function LandingAnalytics() {
+export function DashboardAnalytics() {
   useEffect(() => {
-    track("landing_view");
+    track("dashboard_view");
   }, []);
 
   return null;

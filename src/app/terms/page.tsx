@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { LegalPageLayout } from "@/components/landing/legal-page-layout";
 import { PRODUCT } from "@/config/product";
+import { getSupportEmail } from "@/lib/support";
 
 export const metadata: Metadata = {
   title: "Terms of Service | FIRST $500",
@@ -8,8 +9,10 @@ export const metadata: Metadata = {
 };
 
 export default function TermsPage() {
+  const supportEmail = getSupportEmail();
+
   return (
-    <LegalPageLayout title="Terms of Service" lastUpdated="September 16, 2026">
+    <LegalPageLayout title="Terms of Service" lastUpdated="September 17, 2026">
       <p>
         These Terms of Service (&ldquo;Terms&rdquo;) govern your access to and
         use of {PRODUCT.name} (the &ldquo;Service&rdquo;) operated by FIRST
@@ -45,7 +48,11 @@ export default function TermsPage() {
       <p>
         Refund requests may be considered on a case-by-case basis within 7 days
         of purchase if you have not substantially completed the challenge
-        content. Contact support at the email provided during checkout. We
+        content. Contact support at{" "}
+        <a href={`mailto:${supportEmail}`} className="text-primary underline">
+          {supportEmail}
+        </a>
+        . We
         reserve the right to deny refund requests that appear abusive or
         fraudulent.
       </p>
@@ -109,8 +116,11 @@ export default function TermsPage() {
 
       <h2>12. Contact</h2>
       <p>
-        Questions about these Terms? Contact us at the support email provided
-        during checkout.
+        Questions about these Terms? Contact us at{" "}
+        <a href={`mailto:${supportEmail}`} className="text-primary underline">
+          {supportEmail}
+        </a>
+        .
       </p>
     </LegalPageLayout>
   );

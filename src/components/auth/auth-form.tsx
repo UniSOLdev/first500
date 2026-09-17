@@ -1,7 +1,8 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
 import Link from "next/link";
+import { track } from "@/lib/analytics";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,6 +18,12 @@ type AuthFormProps = {
 export function AuthForm({ mode, action, next = "/dashboard", initialError }: AuthFormProps) {
   const [state, formAction, pending] = useActionState(action, undefined);
   const displayError = state?.error ?? initialError;
+
+  useEffect(() => {
+    if (mode === "signup") {
+      track("signup_started");
+    }
+  }, [mode]);
 
   return (
     <Card className="w-full max-w-md border-neutral-200 shadow-sm">

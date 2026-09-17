@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { LegalPageLayout } from "@/components/landing/legal-page-layout";
 import { PRODUCT } from "@/config/product";
+import { getSupportEmail } from "@/lib/support";
 
 export const metadata: Metadata = {
   title: "Privacy Policy | FIRST $500",
@@ -8,8 +9,10 @@ export const metadata: Metadata = {
 };
 
 export default function PrivacyPage() {
+  const supportEmail = getSupportEmail();
+
   return (
-    <LegalPageLayout title="Privacy Policy" lastUpdated="September 16, 2026">
+    <LegalPageLayout title="Privacy Policy" lastUpdated="September 17, 2026">
       <p>
         This Privacy Policy describes how FIRST $500 (&ldquo;we,&rdquo;
         &ldquo;us,&rdquo; or &ldquo;our&rdquo;) collects, uses, and protects
@@ -112,8 +115,11 @@ export default function PrivacyPage() {
 
       <h2>11. Contact</h2>
       <p>
-        Privacy questions? Contact us at the support email provided during
-        checkout.
+        Privacy questions? Contact us at{" "}
+        <a href={`mailto:${supportEmail}`} className="text-primary underline">
+          {supportEmail}
+        </a>
+        .
       </p>
     </LegalPageLayout>
   );

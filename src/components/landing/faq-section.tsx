@@ -1,5 +1,7 @@
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { getSupportEmail } from "@/lib/support";
+import { getAiMessageLimit } from "@/lib/ai/usage-limit";
 
 const FAQ_ITEMS = [
   {
@@ -45,12 +47,12 @@ const FAQ_ITEMS = [
   {
     question: "Is there a refund policy?",
     answer:
-      "Refund terms are outlined in our Terms of Service. If you have an issue with your purchase, contact support through the email provided at checkout.",
+      `Refund terms are outlined in our Terms of Service. If you have an issue with your purchase, contact ${getSupportEmail()}.`,
   },
   {
     question: "How does the AI coach work?",
     answer:
-      "The AI coach is available throughout the challenge to help when you're stuck — comparing services, refining your offer, adjusting pricing, or improving outreach messages. It uses context from your profile and progress to give relevant guidance.",
+      `The AI coach is available throughout the challenge to help when you're stuck — comparing services, refining your offer, adjusting pricing, or improving outreach messages. Your purchase includes ${getAiMessageLimit()} coach messages. It uses context from your profile and progress to give relevant guidance.`,
   },
 ] as const;
 

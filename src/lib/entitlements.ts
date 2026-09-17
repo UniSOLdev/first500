@@ -107,3 +107,40 @@ export async function grantEntitlementFromCheckout(params: {
   if (error) throw error;
   return data;
 }
+
+export async function revokeEntitlement(params: {
+  userId: string;
+  productKey?: string;
+}) {
+  const admin = getAdminClient();
+  const productKey = params.productKey ?? PRODUCT.key;
+
+  const { error } = await admin
+    .from("entitlements")
+    .update({ status: "refunded" })
+    .eq("user_id", params.userId)
+    .eq("product_key", productKey)
+    .eq("status", "active");
+
+  if (error) throw error;
+}
+
+export async function recordStripeWebhookEvent(
+  stripeEventId: string,
+  eventType: string
+): Promise<boolean> {
+  const admin = getAdminClient();
+
+  const { error } = await admin.from("stripe_webhook_events").insert({
+    stripe_event_id: stripeEventId,
+    event_type: eventType,
+  });
+
+  if (error) {
+    // Unique violation = already processed
+    if (error.code === "23505") return false;
+    throw error;
+  }
+
+  return true;
+}

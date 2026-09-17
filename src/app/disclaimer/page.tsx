@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { LegalPageLayout } from "@/components/landing/legal-page-layout";
 import { PRODUCT } from "@/config/product";
+import { getSupportEmail } from "@/lib/support";
 
 export const metadata: Metadata = {
   title: "Disclaimer | FIRST $500",
@@ -8,8 +9,10 @@ export const metadata: Metadata = {
 };
 
 export default function DisclaimerPage() {
+  const supportEmail = getSupportEmail();
+
   return (
-    <LegalPageLayout title="Disclaimer" lastUpdated="September 16, 2026">
+    <LegalPageLayout title="Disclaimer" lastUpdated="September 17, 2026">
       <p>
         Please read this Disclaimer carefully before using {PRODUCT.name} (the
         &ldquo;Service&rdquo;). By accessing or purchasing the Service, you
@@ -101,8 +104,11 @@ export default function DisclaimerPage() {
 
       <h2>Contact</h2>
       <p>
-        Questions about this Disclaimer? Contact us at the support email
-        provided during checkout.
+        Questions about this Disclaimer? Contact us at{" "}
+        <a href={`mailto:${supportEmail}`} className="text-primary underline">
+          {supportEmail}
+        </a>
+        .
       </p>
     </LegalPageLayout>
   );

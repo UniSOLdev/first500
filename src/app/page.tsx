@@ -8,6 +8,7 @@ import { HowItWorks } from "@/components/landing/how-it-works";
 import { WhatYouGet } from "@/components/landing/what-you-get";
 import { WhoThisIsFor } from "@/components/landing/who-this-is-for";
 import { ValuePricing } from "@/components/landing/value-pricing";
+import { FounderSection } from "@/components/landing/founder-section";
 import { FaqSection } from "@/components/landing/faq-section";
 import { FinalCta } from "@/components/landing/final-cta";
 import { LandingAnalytics } from "@/components/landing/landing-analytics";
@@ -24,6 +25,7 @@ export default function LandingPage() {
         <HowItWorks />
         <WhatYouGet />
         <WhoThisIsFor />
+        <FounderSection />
         <ValuePricing />
         <FaqSection />
         <FinalCta />

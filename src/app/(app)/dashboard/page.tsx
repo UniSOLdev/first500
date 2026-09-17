@@ -26,6 +26,7 @@ import {
 } from "@/lib/challenge/progress";
 import { createClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
+import { DashboardAnalytics } from "@/components/dashboard/dashboard-analytics";
 
 export default async function DashboardPage() {
   const user = await requireEntitlement();
@@ -77,6 +78,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="mx-auto max-w-4xl space-y-8 px-4 py-8 sm:px-6 sm:py-10">
+      <DashboardAnalytics />
       {devBypassActive && (
         <div className="flex items-start gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-900 dark:text-amber-200">
           <AlertTriangle className="mt-0.5 size-4 shrink-0" />
